@@ -13,6 +13,8 @@ httpsServer.listen(2304)
 const expressWs = require('express-ws')(app, httpsServer)
 
 let ultimoDato = 'no hay nada'
+let grabando = false
+let id = ''
 
 app.get('/', (req, res) => res.send('hola 2304'))
 
@@ -22,11 +24,18 @@ app.ws('/input', (ws, req) => {
     if (msg === 'ack') {
       ws.send(ultimoDato)
     }
+    else if (msg === 'grabar') {
+      grabando = true
+    }
+    else if (msg.startsWith('detener')) {
+      grabando = false
+      id = msg.split(',')[1]
+    }
     else {
-      console.log('me llegó', msg)
       ultimoDato = msg
-      ws.send('ack')
+      ws.send(`${grabando},${id}`)
     }
   })
+  ws.on('error', console.err)
 })
 
